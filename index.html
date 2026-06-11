@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrowserGrep | Local Code Search</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Paleta Moderna (Inspirada no Tailwind CSS) */
+            --bg-base: #0f172a;        /* slate-900 */
+            --bg-panel: #1e293b;       /* slate-800 */
+            --bg-input: #0f172a;
+            --text-main: #f8fafc;      /* slate-50 */
+            --text-muted: #94a3b8;     /* slate-400 */
+            --accent: #6366f1;         /* indigo-500 */
+            --accent-hover: #4f46e5;   /* indigo-600 */
+            --border: #334155;         /* slate-700 */
+            --success: #10b981;        /* emerald-500 */
+            --success-hover: #059669;  /* emerald-600 */
+            --highlight-bg: rgba(245, 158, 11, 0.2);
+            --highlight-border: #f59e0b;
+            --highlight-text: #fcd34d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            margin: 0; 
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px; 
+            margin: 0 auto;
+            background-color: var(--bg-panel); 
+            padding: 32px;
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        h1 { 
+            margin-top: 0; 
+            font-size: 1.5rem; 
+            font-weight: 600;
+            color: var(--text-main); 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 16px; 
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 0.9rem;
+            font-weight: 500; 
+            color: var(--text-muted); 
+        }
+
+        input[type="text"] {
+            width: 100%; 
+            padding: 12px 16px; 
+            box-sizing: border-box;
+            background-color: var(--bg-input); 
+            color: var(--text-main); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .row { display: flex; gap: 20px; }
+        .row .form-group { flex: 1; }
+        
+        .options-row { 
+            display: flex; 
+            gap: 24px; 
+            margin-bottom: 24px; 
+            padding: 16px;
+            background-color: var(--bg-input);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .options-row label { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        button {
+            color: white; 
+            border: none;
+            padding: 14px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            font-weight: 600;
+            transition: all 0.2s; 
+            width: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 10px;
+        }
+
+        #btnSelect { 
+            background-color: var(--success); 
+            margin-bottom: 12px; 
+        }
+        #btnSelect:hover:not(:disabled) { background-color: var(--success-hover); }
+        
+        #btnSearch { background-color: var(--accent); }
+        #btnSearch:hover:not(:disabled) { background-color: var(--accent-hover); }
+        
+        button:disabled { 
+            background-color: var(--border); 
+            color: var(--text-muted); 
+            cursor: not-allowed; 
+            opacity: 0.7;
+        }
+
+        .folder-path { 
+            color: var(--text-muted); 
+            font-size: 0.9rem; 
+            margin-bottom: 24px; 
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        .status-box {
+            background-color: var(--bg-input); 
+            border: 1px solid var(--border);
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-top: 24px;
+        }
+
+        #statusText {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        #statusText strong { color: var(--text-main); }
+
+        progress {
+            width: 100%; 
+            height: 8px; 
+            margin-top: 16px; 
+            border-radius: 4px;
+            display: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        progress::-webkit-progress-bar {
+            background-color: var(--border);
+            border-radius: 4px;
+        }
+        
+        progress::-webkit-progress-value {
+            background-color: var(--accent);
+            border-radius: 4px;
+            transition: width 0.1s ease;
+        }
+
+        .current-file {
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.8rem; 
+            color: var(--text-muted);
+            margin-top: 12px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            display: none;
+        }
+        
+        #results { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+        
+        .result-item {
+            background-color: var(--bg-input); 
+            border: 1px solid var(--border); 
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-name { 
+            font-weight: 500; 
+            color: var(--text-main); 
+            padding: 12px 16px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            word-break: break-all; 
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .match-snippet {
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.85rem; 
+            color: var(--text-muted);
+            padding: 16px; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            line-height: 1.5;
+        }
+
+        .highlight { 
+            background-color: var(--highlight-bg); 
+            color: var(--highlight-text); 
+            padding: 2px 4px; 
+            border-radius: 4px; 
+            border: 1px solid var(--highlight-border); 
+        }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M5 18l-3-3 3-3"/><path d="M9 18l3-3-3-3"/></svg>
+        BrowserGrep (Offline Search)
+    </h1>
+    
+    <div class="row">
+        <div class="form-group">
+            <label for="searchTerm">Texto a buscar</label>
+            <input type="text" id="searchTerm" placeholder="Ex: function init()">
+        </div>
+        <div class="form-group">
+            <label for="extensions">Extensões permitidas (separadas por vírgula)</label>
+            <input type="text" id="extensions" value=".fr3, .pas, .dfm, .sql, .js, .html">
+        </div>
+    </div>
+
+    <div class="options-row">
+        <label><input type="checkbox" id="caseSensitive"> Maiúsculas/Minúsculas</label>
+        <label><input type="checkbox" id="exactWord" checked> Palavra Exata</label>
+    </div>
+
+    <button id="btnSelect">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Selecionar Pasta do Projeto
+    </button>
+    <div id="selectedFolder" class="folder-path">Nenhum diretório selecionado.</div>
+    
+    <button id="btnSearch" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Iniciar Busca Profunda
+    </button>
+
+    <div class="status-box">
+        <div id="statusText">Aguardando instruções...</div>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <div id="currentFile" class="current-file"></div>
+    </div>
+    
+    <div id="results"></div>
+</div>
+
+<script>
+    const btnSelect = document.getElementById('btnSelect');
+    const btnSearch = document.getElementById('btnSearch');
+    const statusText = document.getElementById('statusText');
+    const progressBar = document.getElementById('progressBar');
+    const currentFileDiv = document.getElementById('currentFile');
+    const resultsDiv = document.getElementById('results');
+    const selectedFolderDiv = document.getElementById('selectedFolder');
+
+    let directoryHandle = null;
+
+    btnSelect.addEventListener('click', async () => {
+        try {
+            directoryHandle = await window.showDirectoryPicker({ mode: 'read' });
+            selectedFolderDiv.innerHTML = `Pasta raiz: <strong>${directoryHandle.name}</strong>`;
+            btnSearch.disabled = false;
+            statusText.textContent = "Diretório mapeado. Pronto para iniciar a busca.";
+        } catch (error) {
+            console.log("Seleção cancelada ou erro:", error);
+        }
+    });
+
+    async function* getFilesRecursively(dirHandle, path = "") {
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file') {
+                yield { handle: entry, path: path + entry.name };
+            } else if (entry.kind === 'directory') {
+                yield* getFilesRecursively(entry, path + entry.name + "/");
+            }
+        }
+    }
+
+    btnSearch.addEventListener('click', async () => {
+        if (!directoryHandle) return;
+
+        const searchTerm = document.getElementById('searchTerm').value;
+        const rawExtensions = document.getElementById('extensions').value;
+        const isCaseSensitive = document.getElementById('caseSensitive').checked;
+        const isExactWord = document.getElementById('exactWord').checked;
+
+        if (!searchTerm) {
+            alert("Informe um texto para buscar.");
+            return;
+        }
+
+        const validExtensions = rawExtensions.split(',').map(ext => ext.trim().toLowerCase());
+        
+        btnSearch.disabled = true;
+        btnSelect.disabled = true;
+        resultsDiv.innerHTML = '';
+        progressBar.style.display = 'block';
+        currentFileDiv.style.display = 'block';
+        
+        let matchCount = 0;
+        let filesMatched = 0;
+
+        statusText.textContent = `Listando arquivos compatíveis em "${directoryHandle.name}"...`;
+        currentFileDiv.textContent = "Mapeando subpastas...";
+
+        const targetFiles = [];
+        try {
+            for await (const fileObj of getFilesRecursively(directoryHandle)) {
+                const fileNameLower = fileObj.path.toLowerCase();
+                if (validExtensions.some(ext => fileNameLower.endsWith(ext))) {
+                    targetFiles.push(fileObj);
+                }
+            }
+        } catch (error) {
+            statusText.textContent = "Erro ao mapear arquivos. Verifique as permissões.";
+            btnSearch.disabled = false; btnSelect.disabled = false;
+            return;
+        }
+
+        if (targetFiles.length === 0) {
+            statusText.textContent = "Nenhum arquivo com as extensões selecionadas foi encontrado.";
+            progressBar.style.display = 'none';
+            currentFileDiv.style.display = 'none';
+            btnSearch.disabled = false; btnSelect.disabled = false;
+            return;
+        }
+
+        statusText.textContent = `Buscando em ${targetFiles.length} arquivos...`;
+        progressBar.max = targetFiles.length;
+        progressBar.value = 0;
+
+        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapedTerm = escapeRegExp(searchTerm);
+        
+        const boundary = isExactWord ? '\\b' : '';
+        const searchRegex = new RegExp(`(.{0,80})(${boundary}${escapedTerm}${boundary})(.{0,80})`, isCaseSensitive ? 'g' : 'gi');
+        const highlightRegex = new RegExp(`(${boundary}${escapedTerm}${boundary})`, isCaseSensitive ? 'g' : 'gi');
+        const searchLower = searchTerm.toLowerCase();
+
+        let lastYield = Date.now();
+
+        for (let i = 0; i < targetFiles.length; i++) {
+            const fileObj = targetFiles[i];
+            const fullRelativePath = `${directoryHandle.name}/${fileObj.path}`;
+            
+            progressBar.value = i + 1;
+            currentFileDiv.textContent = `Analisando: ${fullRelativePath}`;
+            
+            if (Date.now() - lastYield > 30) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+                lastYield = Date.now();
+            }
+
+            try {
+                const file = await fileObj.handle.getFile();
+                const text = await file.text();
+                
+                const checkText = isCaseSensitive ? text : text.toLowerCase();
+                const checkTerm = isCaseSensitive ? searchTerm : searchLower;
+                
+                if (!checkText.includes(checkTerm)) {
+                    continue; 
+                }
+                
+                let match;
+                let fileMatches = [];
+                searchRegex.lastIndex = 0;
+
+                while ((match = searchRegex.exec(text)) !== null) {
+                    if (match.index === searchRegex.lastIndex) searchRegex.lastIndex++;
+                    
+                    let snippet = `...${match[1]}${match[2]}${match[3]}...`
+                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+                    snippet = snippet.replace(highlightRegex, '<span class="highlight">$1</span>');
+                    fileMatches.push(snippet);
+                    matchCount++;
+                }
+
+                if (fileMatches.length > 0) {
+                    filesMatched++;
+                    renderResult(fullRelativePath, fileMatches);
+                }
+            } catch (readErr) {
+                console.warn(`Não foi possível ler: ${fileObj.path}`);
+            }
+        }
+            
+        statusText.innerHTML = `<span style="color:var(--success)">Busca concluída!</span> O termo foi encontrado <strong>${matchCount} vezes</strong> em <strong>${filesMatched} arquivos</strong>.`;
+        currentFileDiv.style.display = 'none'; 
+        btnSearch.disabled = false;
+        btnSelect.disabled = false;
+    });
+
+    function renderResult(filePath, matches) {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        
+        const title = document.createElement('div');
+        title.className = 'file-name';
+        title.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${filePath}`;
+        
+        const snippetDiv = document.createElement('div');
+        snippetDiv.className = 'match-snippet';
+        snippetDiv.innerHTML = matches.join('<br><br>');
+        
+        div.appendChild(title);
+        div.appendChild(snippetDiv);
+        resultsDiv.appendChild(div);
+    }
+</script>
+
+</body>
+</html>
