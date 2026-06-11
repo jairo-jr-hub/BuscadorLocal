@@ -11,21 +11,23 @@
 
     <style>
         :root {
-            /* Tema Dark Violet (Inspirado na referência) */
-            --bg-body: #0d0b14;          /* Roxo ultra escuro (quase preto) */
-            --bg-surface: #15121e;       /* Painéis (Roxo escuro) */
-            --bg-surface-hover: #1e1a2b; /* Hover suave */
-            --border-light: #2d273f;     /* Bordas com tom violeta */
+            /* Tema Dark Violet */
+            --bg-body: #0d0b14;          
+            --bg-surface: #15121e;       
+            --bg-surface-hover: #1e1a2b; 
+            --border-light: #2d273f;     
             
-            --text-primary: #f8fafc;     /* Branco suave */
-            --text-secondary: #9e9ba8;   /* Cinza com toque de roxo */
+            --text-primary: #f8fafc;     
+            --text-secondary: #9e9ba8;   
             
-            --accent-main: #8b5cf6;      /* Violeta Vibrante (Botões/Ícones) */
-            --accent-main-hover: #7c3aed;/* Violeta mais intenso no hover */
-            --accent-success: #10b981;   /* Verde para sucesso */
+            --accent-main: #8b5cf6;      
+            --accent-main-hover: #7c3aed;
+            --accent-success: #10b981;   
+            --accent-danger: #ef4444;    /* Vermelho para o botão Parar */
+            --accent-danger-hover: #dc2626;
             
-            --match-bg: rgba(245, 158, 11, 0.25); /* Fundo Amarelo/Âmbar para destacar texto */
-            --match-text: #fbbf24;                /* Texto Amarelo/Âmbar */
+            --match-bg: rgba(245, 158, 11, 0.25); 
+            --match-text: #fbbf24;                
             
             --radius-md: 10px;
             --radius-lg: 16px;
@@ -37,7 +39,6 @@
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-body);
-            /* O "Glow" no canto superior direito para dar aquele efeito premium */
             background-image: radial-gradient(circle at top right, #24193d 0%, var(--bg-body) 40%);
             background-attachment: fixed;
             color: var(--text-primary);
@@ -67,12 +68,17 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             padding: 0 20px; height: 48px; border-radius: var(--radius-md);
             font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; border: none;
+            min-width: 180px; /* Mantém a largura fixa para não piscar ao trocar texto */
         }
-        .btn-folder { background-color: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-light); }
+        .btn-folder { background-color: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-light); min-width: auto;}
         .btn-folder:hover { background-color: #272238; }
+        
         .btn-search { background-color: var(--accent-main); color: white; }
         .btn-search:hover:not(:disabled) { background-color: var(--accent-main-hover); }
         .btn-search:disabled { background-color: var(--border-light); color: var(--text-secondary); cursor: not-allowed; opacity: 0.7; }
+        
+        .btn-danger { background-color: var(--accent-danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: var(--accent-danger-hover); }
 
         /* --- FILTROS --- */
         .settings-grid {
@@ -261,6 +267,10 @@
     let currentSearchTerm = "";
     let isCaseSensitive = false;
     let isExactWord = false;
+    
+    // Variáveis de Controle de Estado da Busca
+    let isSearching = false;
+    let abortSearch = false;
 
     const getCheckedValues = (containerId) => Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => cb.value.toLowerCase());
 
@@ -283,7 +293,11 @@
     });
 
     async function* walkDirectory(dirHandle, ignores, exts, currentPath = "") {
+        if (abortSearch) return; // Aborta a varredura se solicitado
+
         for await (const entry of dirHandle.values()) {
+            if (abortSearch) return; // Aborta a varredura a cada iteração
+
             if (entry.kind === 'directory') {
                 if (ignores.includes(entry.name.toLowerCase())) continue;
                 yield* walkDirectory(entry, ignores, exts, currentPath + entry.name + "\\");
@@ -298,6 +312,16 @@
 
     btnSearch.addEventListener('click', async () => {
         if (!directoryHandle) return;
+
+        // SE CLICOU EM "PARAR BUSCA"
+        if (isSearching) {
+            abortSearch = true;
+            btnSearch.innerHTML = "Parando...";
+            btnSearch.disabled = true; // Desabilita rapidamente para não bugar o clique duplo
+            return;
+        }
+
+        // SE CLICOU EM "BUSCAR"
         currentSearchTerm = document.getElementById('searchTerm').value;
         if (!currentSearchTerm) return document.getElementById('searchTerm').focus();
 
@@ -311,8 +335,17 @@
             return;
         }
 
-        btnSearch.disabled = true;
-        btnSearch.textContent = "Buscando...";
+        // Inicia Estado de Busca
+        isSearching = true;
+        abortSearch = false;
+        
+        // Transforma o botão em VERMELHO
+        btnSearch.classList.replace('btn-search', 'btn-danger');
+        btnSearch.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+            Parar Busca
+        `;
+
         fileListDiv.innerHTML = '';
         previewContent.innerHTML = '<div class="empty-state">Processando arquivos...</div>';
         currentFoundFiles = [];
@@ -328,17 +361,24 @@
 
         try {
             for await (const fileObj of walkDirectory(directoryHandle, activeIgnores, activeExts)) {
+                if (abortSearch) break; // Trava imediata do loop principal
+
                 if (performance.now() - lastYield > 60) {
                     statusText.innerHTML = `Lendo: <strong>${fileObj.name}</strong>...`;
                     await new Promise(r => setTimeout(r, 0));
                     lastYield = performance.now();
                 }
 
+                if (abortSearch) break; // Segunda trava após o respiro do navegador
+
                 try {
                     const file = await fileObj.handle.getFile();
+                    if (abortSearch) break;
                     if (file.size > 15 * 1024 * 1024) continue;
 
                     const text = await file.text();
+                    if (abortSearch) break;
+
                     const checkText = isCaseSensitive ? text : text.toLowerCase();
                     const checkTerm = isCaseSensitive ? currentSearchTerm : termLower;
 
@@ -355,19 +395,32 @@
                 } catch (readErr) {}
             }
         } catch (err) {
-            statusText.innerHTML = "<span style='color:#ef4444'>Erro: Dê a permissão no navegador.</span>";
+            if (!abortSearch) {
+                statusText.innerHTML = "<span style='color:#ef4444'>Erro: Dê a permissão no navegador.</span>";
+            }
         }
 
+        // Finaliza o estado da busca e restaura o botão
+        isSearching = false;
+        btnSearch.classList.replace('btn-danger', 'btn-search');
+        btnSearch.innerHTML = 'Buscar Agora';
+        btnSearch.disabled = false;
+
+        const endTime = ((performance.now() - startTime) / 1000).toFixed(2);
         sidebarTitle.textContent = `Resultados Encontrados: ${fileMatchCount}`;
-        statusText.innerHTML = `Busca finalizada!`;
-        statusMetrics.textContent = `${totalOccurrences} Ocorrências | Tempo: ${((performance.now() - startTime) / 1000).toFixed(2)}s`;
+        
+        if (abortSearch) {
+            statusText.innerHTML = `<span style="color:var(--accent-text)">Busca interrompida.</span> Mostrando resultados parciais.`;
+        } else {
+            statusText.innerHTML = `Busca finalizada!`;
+        }
+        
+        statusMetrics.textContent = `${totalOccurrences} Ocorrências | Tempo: ${endTime}s`;
         
         if (fileMatchCount === 0) {
             fileListDiv.innerHTML = '<div class="empty-state">Sem resultados.</div>';
             previewContent.innerHTML = '';
         }
-        btnSearch.disabled = false;
-        btnSearch.innerHTML = 'Buscar Agora';
     });
 
     function renderSidebarItem(fileName, fullPath, count, index) {
@@ -422,7 +475,6 @@
         if (e.key === 'Escape') contextMenu.style.display = 'none';
     });
 
-    // --- AÇÕES DO MENU DE OPÇÕES (SOMENTE COPIAR NOME) ---
     document.getElementById('ctxCopyName').addEventListener('click', () => {
         if(contextMenuTarget) {
             navigator.clipboard.writeText(contextMenuTarget.fileName);
