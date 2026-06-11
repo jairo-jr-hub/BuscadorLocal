@@ -3,470 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrowserGrep | Local Code Search</title>
+    <title>BrowserGrep | Violet Theme</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Paleta Moderna (Inspirada no Tailwind CSS) */
-            --bg-base: #0f172a;        /* slate-900 */
-            --bg-panel: #1e293b;       /* slate-800 */
-            --bg-input: #0f172a;
-            --text-main: #f8fafc;      /* slate-50 */
-            --text-muted: #94a3b8;     /* slate-400 */
-            --accent: #6366f1;         /* indigo-500 */
-            --accent-hover: #4f46e5;   /* indigo-600 */
-            --border: #334155;         /* slate-700 */
-            --success: #10b981;        /* emerald-500 */
-            --success-hover: #059669;  /* emerald-600 */
-            --highlight-bg: rgba(245, 158, 11, 0.2);
-            --highlight-border: #f59e0b;
-            --highlight-text: #fcd34d;
+            /* Tema Dark Violet (Inspirado na referência) */
+            --bg-body: #0d0b14;          /* Roxo ultra escuro (quase preto) */
+            --bg-surface: #15121e;       /* Painéis (Roxo escuro) */
+            --bg-surface-hover: #1e1a2b; /* Hover suave */
+            --border-light: #2d273f;     /* Bordas com tom violeta */
+            
+            --text-primary: #f8fafc;     /* Branco suave */
+            --text-secondary: #9e9ba8;   /* Cinza com toque de roxo */
+            
+            --accent-main: #8b5cf6;      /* Violeta Vibrante (Botões/Ícones) */
+            --accent-main-hover: #7c3aed;/* Violeta mais intenso no hover */
+            --accent-success: #10b981;   /* Verde para sucesso */
+            
+            --match-bg: rgba(245, 158, 11, 0.25); /* Fundo Amarelo/Âmbar para destacar texto */
+            --match-text: #fbbf24;                /* Texto Amarelo/Âmbar */
+            
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-pill: 999px;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            margin: 0; 
-            padding: 40px 20px;
-            line-height: 1.6;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            /* O "Glow" no canto superior direito para dar aquele efeito premium */
+            background-image: radial-gradient(circle at top right, #24193d 0%, var(--bg-body) 40%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            height: 100vh; display: flex; flex-direction: column;
+            padding: 20px; gap: 16px; overflow: hidden;
         }
 
-        .container {
-            max-width: 900px; 
-            margin: 0 auto;
-            background-color: var(--bg-panel); 
-            padding: 32px;
-            border-radius: 12px; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border);
+        /* --- PAINEL SUPERIOR --- */
+        .control-panel {
+            background-color: var(--bg-surface); border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg); padding: 24px; display: flex;
+            flex-direction: column; gap: 20px; flex-shrink: 0; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         }
 
-        h1 { 
-            margin-top: 0; 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            color: var(--text-main); 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 16px; 
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-group { margin-bottom: 20px; }
+        .search-bar-container { display: flex; gap: 12px; align-items: center; }
         
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-size: 0.9rem;
-            font-weight: 500; 
-            color: var(--text-muted); 
+        .search-input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
+        .search-input-wrapper svg { position: absolute; left: 16px; color: var(--text-secondary); }
+        .search-input-wrapper input {
+            width: 100%; background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-light);
+            color: var(--text-primary); border-radius: var(--radius-md); padding: 14px 14px 14px 44px;
+            font-family: 'Fira Code', monospace; font-size: 1rem; transition: all 0.2s; outline: none;
         }
+        .search-input-wrapper input:focus { border-color: var(--accent-main); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
 
-        input[type="text"] {
-            width: 100%; 
-            padding: 12px 16px; 
-            box-sizing: border-box;
-            background-color: var(--bg-input); 
-            color: var(--text-main); 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            font-size: 1rem;
-            transition: all 0.2s ease;
-            outline: none;
-            font-family: 'JetBrains Mono', monospace;
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 0 20px; height: 48px; border-radius: var(--radius-md);
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; border: none;
         }
+        .btn-folder { background-color: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-light); }
+        .btn-folder:hover { background-color: #272238; }
+        .btn-search { background-color: var(--accent-main); color: white; }
+        .btn-search:hover:not(:disabled) { background-color: var(--accent-main-hover); }
+        .btn-search:disabled { background-color: var(--border-light); color: var(--text-secondary); cursor: not-allowed; opacity: 0.7; }
 
-        input[type="text"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        /* --- FILTROS --- */
+        .settings-grid {
+            display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 24px;
+            background-color: rgba(0,0,0,0.15); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-light);
         }
+        .settings-group { display: flex; flex-direction: column; gap: 10px; }
+        .group-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); font-weight: 700; }
 
-        .row { display: flex; gap: 20px; }
-        .row .form-group { flex: 1; }
+        .chip-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { cursor: pointer; user-select: none; }
+        .chip input { display: none; } 
+        .chip span {
+            display: inline-block; padding: 6px 14px; background-color: var(--bg-surface);
+            border: 1px solid var(--border-light); border-radius: var(--radius-pill);
+            font-size: 0.8rem; color: var(--text-secondary); transition: all 0.2s;
+        }
+        .chip input:checked + span { background-color: rgba(139, 92, 246, 0.15); border-color: var(--accent-main); color: var(--accent-main); font-weight: 600; }
+
+        .switch-group { display: flex; flex-direction: column; gap: 12px; margin-top: 4px;}
+        .switch-label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--text-primary); cursor: pointer; }
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-surface-hover); border-radius: 20px; transition: .3s; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: var(--text-secondary); border-radius: 50%; transition: .3s; }
+        .switch input:checked + .slider { background-color: var(--accent-main); }
+        .switch input:checked + .slider:before { transform: translateX(16px); background-color: white;}
+
+        .status-area { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); align-items: center;}
+        .status-area strong { color: var(--text-primary); font-weight: 600;}
+        .metrics { font-family: 'Fira Code', monospace; color: var(--accent-success); }
+
+        /* --- WORKSPACE --- */
+        .workspace { display: flex; gap: 16px; flex: 1; overflow: hidden; min-height: 0; }
+        .sidebar { width: 360px; background-color: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+        .panel-header { padding: 12px 16px; background-color: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-light); font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
         
-        .options-row { 
-            display: flex; 
-            gap: 24px; 
-            margin-bottom: 24px; 
-            padding: 16px;
-            background-color: var(--bg-input);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .options-row label { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            font-weight: 500; 
-            cursor: pointer; 
-            margin: 0;
-            color: var(--text-main);
-        }
-
-        input[type="checkbox"] {
-            accent-color: var(--accent);
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
+        .file-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .file-item { padding: 10px 12px; border-radius: var(--radius-md); cursor: pointer; border: 1px solid transparent; transition: 0.1s; display: flex; flex-direction: column; gap: 6px; }
+        .file-item:hover { background-color: var(--bg-surface-hover); }
+        .file-item.active { background-color: rgba(139, 92, 246, 0.1); border-color: var(--accent-main); }
         
-        button {
-            color: white; 
-            border: none;
-            padding: 14px 24px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 1rem; 
-            font-weight: 600;
-            transition: all 0.2s; 
-            width: 100%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 10px;
-        }
-
-        #btnSelect { 
-            background-color: var(--success); 
-            margin-bottom: 12px; 
-        }
-        #btnSelect:hover:not(:disabled) { background-color: var(--success-hover); }
+        .file-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px;}
+        .file-info-group { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;}
+        .file-name { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .file-item.active .file-name { color: var(--accent-main); }
         
-        #btnSearch { background-color: var(--accent); }
-        #btnSearch:hover:not(:disabled) { background-color: var(--accent-hover); }
+        .badge { background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: var(--radius-pill); border: 1px solid var(--border-light); font-size: 0.7rem; font-weight: bold; color: var(--text-secondary); flex-shrink: 0;}
+        .file-item.active .badge { border-color: var(--accent-main); color: var(--accent-main); }
         
-        button:disabled { 
-            background-color: var(--border); 
-            color: var(--text-muted); 
-            cursor: not-allowed; 
-            opacity: 0.7;
-        }
+        .btn-options { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; transition: 0.2s; }
+        .btn-options:hover { background-color: var(--border-light); color: var(--text-primary); }
+        .file-path { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: rtl; text-align: left;}
 
-        .folder-path { 
-            color: var(--text-muted); 
-            font-size: 0.9rem; 
-            margin-bottom: 24px; 
-            font-family: 'JetBrains Mono', monospace;
-            text-align: center;
-        }
+        .main-view { flex: 1; background-color: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
+        .preview-content { flex: 1; overflow: auto; padding: 24px; font-family: 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.7; white-space: pre-wrap; background-color: rgba(0,0,0,0.2); color: #d4d4d4; }
+        .highlight { background-color: var(--match-bg); color: var(--match-text); padding: 2px 4px; border-radius: 4px; border: 1px solid rgba(251, 191, 36, 0.4); font-weight: 600; }
+        .empty-state { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-secondary); font-size: 0.95rem; gap: 12px; }
 
-        .status-box {
-            background-color: var(--bg-input); 
-            border: 1px solid var(--border);
-            padding: 20px; 
-            border-radius: 8px; 
-            margin-top: 24px;
-        }
+        /* --- MENU DE OPÇÕES FLUTUANTE E TOAST --- */
+        .context-menu { position: fixed; background-color: var(--bg-surface-hover); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.8); padding: 6px; min-width: 200px; z-index: 9999; display: none; flex-direction: column; gap: 2px; }
+        .context-menu-item { padding: 10px 12px; font-size: 0.85rem; color: var(--text-primary); cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; transition: 0.1s; }
+        .context-menu-item:hover { background-color: var(--accent-main); color: white; }
+        .context-menu-item svg { width: 16px; height: 16px; opacity: 0.8; }
 
-        #statusText {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-        }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--accent-success); color: white; padding: 12px 24px; border-radius: var(--radius-pill); font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 10000; display: flex; align-items: center; gap: 8px;}
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        #statusText strong { color: var(--text-main); }
-
-        progress {
-            width: 100%; 
-            height: 8px; 
-            margin-top: 16px; 
-            border-radius: 4px;
-            display: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        progress::-webkit-progress-bar {
-            background-color: var(--border);
-            border-radius: 4px;
-        }
-        
-        progress::-webkit-progress-value {
-            background-color: var(--accent);
-            border-radius: 4px;
-            transition: width 0.1s ease;
-        }
-
-        .current-file {
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 0.8rem; 
-            color: var(--text-muted);
-            margin-top: 12px; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            display: none;
-        }
-        
-        #results { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
-        
-        .result-item {
-            background-color: var(--bg-input); 
-            border: 1px solid var(--border); 
-            border-left: 4px solid var(--accent);
-            border-radius: 8px;
-            overflow: hidden;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .file-name { 
-            font-weight: 500; 
-            color: var(--text-main); 
-            padding: 12px 16px;
-            background-color: rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid var(--border);
-            word-break: break-all; 
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .match-snippet {
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 0.85rem; 
-            color: var(--text-muted);
-            padding: 16px; 
-            overflow-x: auto; 
-            white-space: pre-wrap; 
-            line-height: 1.5;
-        }
-
-        .highlight { 
-            background-color: var(--highlight-bg); 
-            color: var(--highlight-text); 
-            padding: 2px 4px; 
-            border-radius: 4px; 
-            border: 1px solid var(--highlight-border); 
-        }
-
-        /* Scrollbar customizada */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-base); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: var(--radius-pill); border: 2px solid var(--bg-surface); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M5 18l-3-3 3-3"/><path d="M9 18l3-3-3-3"/></svg>
-        BrowserGrep (Offline Search)
-    </h1>
-    
-    <div class="row">
-        <div class="form-group">
-            <label for="searchTerm">Texto a buscar</label>
-            <input type="text" id="searchTerm" placeholder="Ex: function init()">
+<div id="toast" class="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="toastMessage">Copiado!</span>
+</div>
+
+<div id="contextMenu" class="context-menu">
+    <div class="context-menu-item" id="ctxCopyName">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copiar Nome do Arquivo
+    </div>
+</div>
+
+<div class="control-panel">
+    <div class="search-bar-container">
+        <div class="search-input-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchTerm" placeholder="Digite o termo, classe ou SQL para buscar (Ex: ALR_OBS)">
         </div>
-        <div class="form-group">
-            <label for="extensions">Extensões permitidas (separadas por vírgula)</label>
-            <input type="text" id="extensions" value=".fr3, .pas, .dfm, .sql, .js, .html">
+        
+        <button id="btnSelectFolder" class="btn btn-folder">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Selecionar Pasta
+        </button>
+        <button id="btnSearch" class="btn btn-search" disabled>
+            Buscar Agora
+        </button>
+    </div>
+
+    <div class="settings-grid">
+        <div class="settings-group">
+            <span class="group-title">Regras de Busca</span>
+            <div class="switch-group">
+                <label class="switch-label">Maiúsculas/Minúsculas <label class="switch"><input type="checkbox" id="caseSensitive"><span class="slider"></span></label></label>
+                <label class="switch-label">Palavra Exata <label class="switch"><input type="checkbox" id="exactWord"><span class="slider"></span></label></label>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <span class="group-title">Extensões Permitidas</span>
+            <div class="chip-container" id="extCheckboxes">
+                <label class="chip"><input type="checkbox" value=".pas" checked><span>.pas</span></label>
+                <label class="chip"><input type="checkbox" value=".dfm" checked><span>.dfm</span></label>
+                <label class="chip"><input type="checkbox" value=".fr3" checked><span>.fr3</span></label>
+                <label class="chip"><input type="checkbox" value=".sql" checked><span>.sql</span></label>
+                <label class="chip"><input type="checkbox" value=".js" checked><span>.js</span></label>
+                <label class="chip"><input type="checkbox" value=".html" checked><span>.html</span></label>
+                <label class="chip"><input type="checkbox" value=".json"><span>.json</span></label>
+                <label class="chip"><input type="checkbox" value=".txt"><span>.txt</span></label>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <span class="group-title">Ignorar (Acelera a busca)</span>
+            <div class="chip-container" id="ignoreCheckboxes">
+                <label class="chip"><input type="checkbox" value=".git" checked><span>.git</span></label>
+                <label class="chip"><input type="checkbox" value="node_modules" checked><span>node_modules</span></label>
+                <label class="chip"><input type="checkbox" value="bin" checked><span>bin</span></label>
+                <label class="chip"><input type="checkbox" value="obj" checked><span>obj</span></label>
+                <label class="chip"><input type="checkbox" value="backup" checked><span>backup</span></label>
+                <label class="chip"><input type="checkbox" value="__pycache__" checked><span>__pycache__</span></label>
+                <label class="chip"><input type="checkbox" value=".idea" checked><span>.idea</span></label>
+            </div>
         </div>
     </div>
 
-    <div class="options-row">
-        <label><input type="checkbox" id="caseSensitive"> Maiúsculas/Minúsculas</label>
-        <label><input type="checkbox" id="exactWord" checked> Palavra Exata</label>
+    <div class="status-area">
+        <div id="statusText">Selecione uma pasta para começar.</div>
+        <div id="statusMetrics" class="metrics"></div>
     </div>
+</div>
 
-    <button id="btnSelect">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Selecionar Pasta do Projeto
-    </button>
-    <div id="selectedFolder" class="folder-path">Nenhum diretório selecionado.</div>
-    
-    <button id="btnSearch" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        Iniciar Busca Profunda
-    </button>
-
-    <div class="status-box">
-        <div id="statusText">Aguardando instruções...</div>
-        <progress id="progressBar" value="0" max="100"></progress>
-        <div id="currentFile" class="current-file"></div>
+<div class="workspace">
+    <div class="sidebar">
+        <div class="panel-header" id="sidebarTitle">Resultados (0)</div>
+        <div class="file-list" id="fileList">
+            <div class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                Sem resultados
+            </div>
+        </div>
     </div>
-    
-    <div id="results"></div>
+    <div class="main-view">
+        <div class="panel-header" id="previewHeader" style="font-family: 'Fira Code', monospace;">Nenhum arquivo selecionado</div>
+        <div class="preview-content" id="previewContent">
+            <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Clique em um arquivo na lista à esquerda para visualizar seu código.
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    const btnSelect = document.getElementById('btnSelect');
+    const btnSelectFolder = document.getElementById('btnSelectFolder');
     const btnSearch = document.getElementById('btnSearch');
     const statusText = document.getElementById('statusText');
-    const progressBar = document.getElementById('progressBar');
-    const currentFileDiv = document.getElementById('currentFile');
-    const resultsDiv = document.getElementById('results');
-    const selectedFolderDiv = document.getElementById('selectedFolder');
+    const statusMetrics = document.getElementById('statusMetrics');
+    const fileListDiv = document.getElementById('fileList');
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const previewHeader = document.getElementById('previewHeader');
+    const previewContent = document.getElementById('previewContent');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    const contextMenu = document.getElementById('contextMenu');
+    let contextMenuTarget = null; 
 
     let directoryHandle = null;
+    let currentFoundFiles = [];
+    let currentSearchTerm = "";
+    let isCaseSensitive = false;
+    let isExactWord = false;
 
-    btnSelect.addEventListener('click', async () => {
+    const getCheckedValues = (containerId) => Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => cb.value.toLowerCase());
+
+    function showToast(msg) {
+        toastMessage.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    btnSelectFolder.addEventListener('click', async () => {
         try {
             directoryHandle = await window.showDirectoryPicker({ mode: 'read' });
-            selectedFolderDiv.innerHTML = `Pasta raiz: <strong>${directoryHandle.name}</strong>`;
+            btnSelectFolder.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${directoryHandle.name}`;
+            btnSelectFolder.style.borderColor = "var(--accent-main)";
+            btnSelectFolder.style.color = "var(--accent-main)";
+            statusText.innerHTML = `Pasta mapeada: <strong>${directoryHandle.name}</strong>. Pode iniciar a busca.`;
             btnSearch.disabled = false;
-            statusText.textContent = "Diretório mapeado. Pronto para iniciar a busca.";
-        } catch (error) {
-            console.log("Seleção cancelada ou erro:", error);
-        }
+            document.getElementById('searchTerm').focus();
+        } catch (err) {}
     });
 
-    async function* getFilesRecursively(dirHandle, path = "") {
+    async function* walkDirectory(dirHandle, ignores, exts, currentPath = "") {
         for await (const entry of dirHandle.values()) {
-            if (entry.kind === 'file') {
-                yield { handle: entry, path: path + entry.name };
-            } else if (entry.kind === 'directory') {
-                yield* getFilesRecursively(entry, path + entry.name + "/");
+            if (entry.kind === 'directory') {
+                if (ignores.includes(entry.name.toLowerCase())) continue;
+                yield* walkDirectory(entry, ignores, exts, currentPath + entry.name + "\\");
+            } else if (entry.kind === 'file') {
+                const fileNameLower = entry.name.toLowerCase();
+                if (exts.some(ext => fileNameLower.endsWith(ext))) {
+                    yield { handle: entry, path: currentPath + entry.name, name: entry.name };
+                }
             }
         }
     }
 
     btnSearch.addEventListener('click', async () => {
         if (!directoryHandle) return;
+        currentSearchTerm = document.getElementById('searchTerm').value;
+        if (!currentSearchTerm) return document.getElementById('searchTerm').focus();
 
-        const searchTerm = document.getElementById('searchTerm').value;
-        const rawExtensions = document.getElementById('extensions').value;
-        const isCaseSensitive = document.getElementById('caseSensitive').checked;
-        const isExactWord = document.getElementById('exactWord').checked;
+        const activeExts = getCheckedValues('extCheckboxes');
+        const activeIgnores = getCheckedValues('ignoreCheckboxes');
+        isCaseSensitive = document.getElementById('caseSensitive').checked;
+        isExactWord = document.getElementById('exactWord').checked;
 
-        if (!searchTerm) {
-            alert("Informe um texto para buscar.");
+        if (activeExts.length === 0) {
+            alert("Você precisa permitir pelo menos uma extensão (Ex: .pas ou .dfm) para iniciar a busca.");
             return;
         }
 
-        const validExtensions = rawExtensions.split(',').map(ext => ext.trim().toLowerCase());
-        
         btnSearch.disabled = true;
-        btnSelect.disabled = true;
-        resultsDiv.innerHTML = '';
-        progressBar.style.display = 'block';
-        currentFileDiv.style.display = 'block';
+        btnSearch.textContent = "Buscando...";
+        fileListDiv.innerHTML = '';
+        previewContent.innerHTML = '<div class="empty-state">Processando arquivos...</div>';
+        currentFoundFiles = [];
+        statusMetrics.textContent = '';
+        statusText.innerHTML = "Buscando...";
         
-        let matchCount = 0;
-        let filesMatched = 0;
+        let fileMatchCount = 0;
+        let totalOccurrences = 0;
+        const termLower = currentSearchTerm.toLowerCase();
+        const startTime = performance.now();
+        let lastYield = performance.now();
+        const exactRegex = isExactWord ? new RegExp(`\\b${currentSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, isCaseSensitive ? '' : 'i') : null;
 
-        statusText.textContent = `Listando arquivos compatíveis em "${directoryHandle.name}"...`;
-        currentFileDiv.textContent = "Mapeando subpastas...";
-
-        const targetFiles = [];
         try {
-            for await (const fileObj of getFilesRecursively(directoryHandle)) {
-                const fileNameLower = fileObj.path.toLowerCase();
-                if (validExtensions.some(ext => fileNameLower.endsWith(ext))) {
-                    targetFiles.push(fileObj);
+            for await (const fileObj of walkDirectory(directoryHandle, activeIgnores, activeExts)) {
+                if (performance.now() - lastYield > 60) {
+                    statusText.innerHTML = `Lendo: <strong>${fileObj.name}</strong>...`;
+                    await new Promise(r => setTimeout(r, 0));
+                    lastYield = performance.now();
                 }
+
+                try {
+                    const file = await fileObj.handle.getFile();
+                    if (file.size > 15 * 1024 * 1024) continue;
+
+                    const text = await file.text();
+                    const checkText = isCaseSensitive ? text : text.toLowerCase();
+                    const checkTerm = isCaseSensitive ? currentSearchTerm : termLower;
+
+                    if (checkText.includes(checkTerm)) {
+                        if (isExactWord && !exactRegex.test(text)) continue;
+
+                        const count = checkText.split(checkTerm).length - 1;
+                        totalOccurrences += count;
+                        fileMatchCount++;
+
+                        currentFoundFiles.push({ fileObj: file, path: fileObj.path, name: fileObj.name, count: count });
+                        renderSidebarItem(fileObj.name, fileObj.path, count, currentFoundFiles.length - 1);
+                    }
+                } catch (readErr) {}
             }
-        } catch (error) {
-            statusText.textContent = "Erro ao mapear arquivos. Verifique as permissões.";
-            btnSearch.disabled = false; btnSelect.disabled = false;
-            return;
+        } catch (err) {
+            statusText.innerHTML = "<span style='color:#ef4444'>Erro: Dê a permissão no navegador.</span>";
         }
 
-        if (targetFiles.length === 0) {
-            statusText.textContent = "Nenhum arquivo com as extensões selecionadas foi encontrado.";
-            progressBar.style.display = 'none';
-            currentFileDiv.style.display = 'none';
-            btnSearch.disabled = false; btnSelect.disabled = false;
-            return;
-        }
-
-        statusText.textContent = `Buscando em ${targetFiles.length} arquivos...`;
-        progressBar.max = targetFiles.length;
-        progressBar.value = 0;
-
-        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const escapedTerm = escapeRegExp(searchTerm);
+        sidebarTitle.textContent = `Resultados Encontrados: ${fileMatchCount}`;
+        statusText.innerHTML = `Busca finalizada!`;
+        statusMetrics.textContent = `${totalOccurrences} Ocorrências | Tempo: ${((performance.now() - startTime) / 1000).toFixed(2)}s`;
         
-        const boundary = isExactWord ? '\\b' : '';
-        const searchRegex = new RegExp(`(.{0,80})(${boundary}${escapedTerm}${boundary})(.{0,80})`, isCaseSensitive ? 'g' : 'gi');
-        const highlightRegex = new RegExp(`(${boundary}${escapedTerm}${boundary})`, isCaseSensitive ? 'g' : 'gi');
-        const searchLower = searchTerm.toLowerCase();
-
-        let lastYield = Date.now();
-
-        for (let i = 0; i < targetFiles.length; i++) {
-            const fileObj = targetFiles[i];
-            const fullRelativePath = `${directoryHandle.name}/${fileObj.path}`;
-            
-            progressBar.value = i + 1;
-            currentFileDiv.textContent = `Analisando: ${fullRelativePath}`;
-            
-            if (Date.now() - lastYield > 30) {
-                await new Promise(resolve => setTimeout(resolve, 0));
-                lastYield = Date.now();
-            }
-
-            try {
-                const file = await fileObj.handle.getFile();
-                const text = await file.text();
-                
-                const checkText = isCaseSensitive ? text : text.toLowerCase();
-                const checkTerm = isCaseSensitive ? searchTerm : searchLower;
-                
-                if (!checkText.includes(checkTerm)) {
-                    continue; 
-                }
-                
-                let match;
-                let fileMatches = [];
-                searchRegex.lastIndex = 0;
-
-                while ((match = searchRegex.exec(text)) !== null) {
-                    if (match.index === searchRegex.lastIndex) searchRegex.lastIndex++;
-                    
-                    let snippet = `...${match[1]}${match[2]}${match[3]}...`
-                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-                    snippet = snippet.replace(highlightRegex, '<span class="highlight">$1</span>');
-                    fileMatches.push(snippet);
-                    matchCount++;
-                }
-
-                if (fileMatches.length > 0) {
-                    filesMatched++;
-                    renderResult(fullRelativePath, fileMatches);
-                }
-            } catch (readErr) {
-                console.warn(`Não foi possível ler: ${fileObj.path}`);
-            }
+        if (fileMatchCount === 0) {
+            fileListDiv.innerHTML = '<div class="empty-state">Sem resultados.</div>';
+            previewContent.innerHTML = '';
         }
-            
-        statusText.innerHTML = `<span style="color:var(--success)">Busca concluída!</span> O termo foi encontrado <strong>${matchCount} vezes</strong> em <strong>${filesMatched} arquivos</strong>.`;
-        currentFileDiv.style.display = 'none'; 
         btnSearch.disabled = false;
-        btnSelect.disabled = false;
+        btnSearch.innerHTML = 'Buscar Agora';
     });
 
-    function renderResult(filePath, matches) {
+    function renderSidebarItem(fileName, fullPath, count, index) {
         const div = document.createElement('div');
-        div.className = 'result-item';
+        div.className = 'file-item';
         
-        const title = document.createElement('div');
-        title.className = 'file-name';
-        title.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${filePath}`;
+        div.innerHTML = `
+            <div class="file-item-top">
+                <div class="file-info-group">
+                    <span class="file-name">${fileName}</span>
+                    <span class="badge">${count}</span>
+                </div>
+                <button class="btn-options" title="Opções do Arquivo">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1.5"></circle>
+                        <circle cx="12" cy="5" r="1.5"></circle>
+                        <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                </button>
+            </div>
+            <div class="file-path">&lrm;${fullPath}</div>
+        `;
         
-        const snippetDiv = document.createElement('div');
-        snippetDiv.className = 'match-snippet';
-        snippetDiv.innerHTML = matches.join('<br><br>');
-        
-        div.appendChild(title);
-        div.appendChild(snippetDiv);
-        resultsDiv.appendChild(div);
+        div.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-options')) {
+                e.stopPropagation(); 
+                
+                contextMenuTarget = { fileName, fullPath };
+                const btnRect = e.target.closest('.btn-options').getBoundingClientRect();
+                
+                contextMenu.style.display = 'flex';
+                contextMenu.style.left = Math.min(btnRect.left, window.innerWidth - 220) + 'px';
+                contextMenu.style.top = (btnRect.bottom + 5) + 'px';
+                return;
+            }
+            
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            div.classList.add('active');
+            loadPreview(index);
+        });
+
+        fileListDiv.appendChild(div);
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.context-menu') && !e.target.closest('.btn-options')) {
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') contextMenu.style.display = 'none';
+    });
+
+    // --- AÇÕES DO MENU DE OPÇÕES (SOMENTE COPIAR NOME) ---
+    document.getElementById('ctxCopyName').addEventListener('click', () => {
+        if(contextMenuTarget) {
+            navigator.clipboard.writeText(contextMenuTarget.fileName);
+            showToast('Nome do arquivo copiado!');
+        }
+        contextMenu.style.display = 'none';
+    });
+
+    async function loadPreview(index) {
+        const fileData = currentFoundFiles[index];
+        previewHeader.innerHTML = fileData.path;
+        previewContent.innerHTML = '<div class="empty-state">Carregando código...</div>';
+
+        try {
+            const text = await fileData.fileObj.text();
+            let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const escapeTerm = currentSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const boundary = isExactWord ? '\\b' : '';
+            const regex = new RegExp(`(${boundary}${escapeTerm}${boundary})`, isCaseSensitive ? 'g' : 'gi');
+            
+            let isFirstMatch = true;
+            safeText = safeText.replace(regex, (match) => {
+                const idAttr = isFirstMatch ? 'id="first-match"' : '';
+                isFirstMatch = false;
+                return `<span class="highlight" ${idAttr}>${match}</span>`;
+            });
+
+            previewContent.innerHTML = safeText;
+
+            const firstMatchEl = document.getElementById('first-match');
+            if (firstMatchEl) {
+                setTimeout(() => firstMatchEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+            }
+        } catch (error) {
+            previewContent.innerHTML = '<div class="empty-state">Erro ao ler arquivo.</div>';
+        }
     }
 </script>
 
